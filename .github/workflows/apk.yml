@@ -1,109 +1,12 @@
-name: Build Android APK
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
+name: Build APK
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup environment
-      run: |
-        # Install system dependencies
-        sudo apt-get update
-        sudo apt-get install -y \
-          python3 \
-          python3-pip \
-          python3-venv \
-          build-essential \
-          git \
-          zip \
-          unzip \
-          libssl-dev \
-          libffi-dev \
-          libxml2-dev \
-          libxslt-dev \
-          libjpeg-dev \
-          zlib1g-dev \
-          libsdl2-dev \
-          libsdl2-image-dev \
-          libsdl2-mixer-dev \
-          libsdl2-ttf-dev \
-          libportmidi-dev \
-          libswscale-dev \
-          libavformat-dev \
-          libavcodec-dev \
-          autoconf \
-          automake \
-          libtool \
-          pkg-config \
-          cmake
-        
-    - name: Install Java
-      uses: actions/setup-java@v3
+    - uses: actions/checkout@v4
+    - uses: mrokeat/buildozer-action@v1.3.0
+    - uses: actions/upload-artifact@v4
       with:
-        distribution: 'temurin'
-        java-version: '17'
-        
-    - name: Install Buildozer
-      run: |
-        python -m pip install --upgrade pip
-        pip install buildozer cython==0.29.33
-        
-    - name: Create minimal buildozer.spec
-      run: |
-        cat > buildozer.spec << 'EOF'
-[app]
-title = NFC Password Manager
-package.name = nfcpasswordmanager
-package.domain = org.nfc
-source.dir = .
-source.main = main.py
-source.include_exts = py,png,jpg,kv,atlas,json,txt
-version = 1.0
-requirements = python3,kivy==2.3.0,pycryptodome
-android.permissions = NFC,INTERNET
-android.features = android.hardware.nfc
-android.minapi = 21
-android.api = 30
-android.arch = armeabi-v7a
-orientation = portrait
-fullscreen = 0
-log_level = 2
-EOF
-        
-    - name: Build APK
-      run: |
-        echo "Starting APK build..."
-        # Set environment variable to allow Buildozer to run
-        export BUILDOZER_ALLOW_ROOT=1
-        
-        # Initialize Buildozer
-        buildozer init 2>/dev/null || true
-        
-        # Build the APK
-        buildozer -v android debug 2>&1 | tee build.log
-        
-        # Check if APK was created
-        if ls bin/*.apk 1> /dev/null 2>&1; then
-          echo "✅ APK successfully built!"
-          ls -lah bin/
-        else
-          echo "❌ APK build failed!"
-          echo "Last 50 lines of build log:"
-          tail -50 build.log || true
-          exit 1
-        fi
-        
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: nfc-password-manager-apk
+        name: nfc-app
         path: bin/*.apk
-        retention-days: 30
