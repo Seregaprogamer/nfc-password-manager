@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+
+# Buildozer
+.buildozer/
+bin/
+*.log
+*.apk
+
+# Data files (don't commit!)
+nfc_passwords.json
+*.db
+*.sqlite
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
