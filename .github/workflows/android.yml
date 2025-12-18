@@ -32,6 +32,19 @@ jobs:
 
       - name: Build APK
         run: |
+          set -e
+
+          # 1) Первый запуск — пусть Buildozer скачает SDK/NDK (может упасть на лицензии — это ок)
+          buildozer -v android debug || true
+
+          # 2) Принять лицензии неинтерактивно
+          SDKMGR="$HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager"
+          yes | "$SDKMGR" --sdk_root="$HOME/.buildozer/android/platform/android-sdk" --licenses
+
+          # 3) Убедиться, что platform-tools есть
+          "$SDKMGR" --sdk_root="$HOME/.buildozer/android/platform/android-sdk" "platform-tools"
+
+          # 4) Второй запуск — уже нормальная сборка
           buildozer -v android debug
 
       - name: Upload APK
